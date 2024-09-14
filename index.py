@@ -1,24 +1,27 @@
 import time
 import asyncio
 import aiohttp
+from typing import List, TypedDict, Awaitable
 from tg_bot_sender.saveFile import saveFile
 from tg_bot_sender.sendMessage import sendMessage, Data
 from tg_bot_sender.conf import DIVIDER_AMOUNT
 
+class Response(TypedDict):
+    amount: str
 class TelegramSender():
     def __init__(self, token, logs = False):
         self.token = token
         self.loop = asyncio.get_event_loop()
         self.logs = logs
         
-    def groupUser(self, idsArray):
+    def groupUser(self, idsArray) -> List[List[int]]:
         return [idsArray[d:d+DIVIDER_AMOUNT] for d in range(0, len(idsArray), DIVIDER_AMOUNT)]
     
-    def saveExecuter(self, gatherTasks):
+    def saveExecuter(self, gatherTasks) -> None:
         if self.logs:
             return saveFile(str(round(time.time())), gatherTasks)
     
-    async def sendFromIds(self, idsArray, data: Data):
+    async def sendFromIds(self, idsArray: List[int], data: Data) -> Awaitable[Response]:
         slicedIdArray = self.groupUser(idsArray)
         tasks = []
         for idArray in slicedIdArray:
@@ -32,19 +35,15 @@ class TelegramSender():
                 self.saveExecuter(gatherTasks)
                 print('LOG: end sending')
                 
-        return {
-            "amount": len(gatherTasks)
-        }
+        return Response(amount=len(gatherTasks))
 
-    async def sendFromId(self, id, data: Data):
+    async def sendFromId(self, id: int, data: Data) -> Awaitable[Response]:
         async with aiohttp.ClientSession(loop=self.loop,connector=aiohttp.TCPConnector(ssl=False),trust_env=True) as session:
             print('LOG: start sending')
             data = await asyncio.create_task(sendMessage(session, id, data, self.token))
             self.saveExecuter(data)
             print('LOG: end sending')
-            return {
-                "amount": 1
-            }
+            return Response(amount=1)
             
 
 

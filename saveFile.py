@@ -1,8 +1,9 @@
 import os
 from datetime import datetime
 import json 
+from typing import Any
 
-def saveFile(pushName, gatherTasks) -> None:
+def saveFile(pushName: str, gatherTasks: Any) -> None:
     if not os.path.isdir(f'{pushName}'):
         os.mkdir(f'{pushName}')
 

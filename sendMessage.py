@@ -1,6 +1,6 @@
 import json
 import asyncio
-from typing import TypedDict, List
+from typing import TypedDict, List, Dict, Union, Awaitable, Any
 from aiogram import  types
 from tg_bot_sender.conf import TELEGRAM_API_URL
 
@@ -13,9 +13,9 @@ class Data(TypedDict):
     text: str
     buttons: List[Button]
     
-async def sendMessage(session, user, pushData: Data, token):
-    url = f"{TELEGRAM_API_URL}{token}/"
-    data = {
+async def sendMessage(session, user: int, pushData: Data, token: str) -> Awaitable[Any]:
+    url: str = f"{TELEGRAM_API_URL}{token}/"
+    data: Dict[str, Union[str, int]] = {
         "chat_id": user,
         'parse_mode': types.ParseMode.HTML,
     }
