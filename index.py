@@ -20,7 +20,7 @@ class TelegramSender():
     
     async def sendFromIds(self, idsArray, data: Data):
         slicedIdArray = self.groupUser(idsArray)
-        
+        tasks = []
         for idArray in slicedIdArray:
             async with aiohttp.ClientSession(loop=self.loop,connector=aiohttp.TCPConnector(ssl=False),trust_env=True) as session:
                 print('LOG: start sending')
@@ -31,6 +31,10 @@ class TelegramSender():
                 gatherTasks = await asyncio.gather(*tasks)
                 self.saveExecuter(gatherTasks)
                 print('LOG: end sending')
+                
+        return {
+            "amount": len(gatherTasks)
+        }
 
     async def sendFromId(self, id, data: Data):
         async with aiohttp.ClientSession(loop=self.loop,connector=aiohttp.TCPConnector(ssl=False),trust_env=True) as session:
@@ -38,7 +42,9 @@ class TelegramSender():
             data = await asyncio.create_task(sendMessage(session, id, data, self.token))
             self.saveExecuter(data)
             print('LOG: end sending')
-
+            return {
+                "amount": 1
+            }
             
 
 
@@ -47,6 +53,6 @@ if __name__=='__main__':
     tg = TelegramSender('*')
     
     startTime = time.time()
-    loop.run_until_complete(tg.sendFromId('*', Data(text='Hello')))
-    loop.run_until_complete(tg.sendFromIds(['*', '*', '*'], Data(text='Hello')))
+    data = loop.run_until_complete(tg.sendFromId('*', Data(text='Hello')))
+    d = loop.run_until_complete(tg.sendFromIds(['*', '*', '*'], Data(text='Hello')))
     print(f'LOG: time {time.time() - startTime}')
